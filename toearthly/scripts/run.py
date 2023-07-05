@@ -8,7 +8,8 @@ from typing import Tuple
 import inquirer
 import openai
 
-from toearthly.core import boot, constants, gha_to_bash_prompt, io  # noqa: F401
+from toearthly.core import boot, constants, io  # noqa: F401
+from toearthly.prompt import gha_to_bash, bash_to_earthly, earthfile_correction
 
 # Default directories
 DEFAULT_INPUT_DIR = "/input/"
@@ -92,16 +93,16 @@ def main(input_dir: str, earthfile_path: str) -> None:
         io.find_first_dockerfile(input_dir)
 
         print("Starting...\n (This may take 10 minutes)")
-        print("Running Stage 1")
-        runfile, dockerfile, buildfile = gha_to_bash_prompt.prompt1(yml, file_structure)
+        print("Running Stage 1 - GitHub Actions to Bash")
+        runfile, dockerfile, buildfile = gha_to_bash.prompt(yml, file_structure)
 
-        print("Running Stage 2")
-        earthfile = gha_to_bash_prompt.prompt2(
+        print("Running Stage 2 - Bash to Earthly")
+        earthfile = bash_to_earthly.prompt(
             file_structure, runfile, dockerfile, buildfile
         )
 
-        print("Running Stage 3")
-        earthfile = gha_to_bash_prompt.prompt3(earthfile, yml, file_structure)
+        print("Running Stage 3 - Earthfile Correction")
+        earthfile = earthfile_correction.prompt(earthfile, yml, file_structure)
         verify(earthfile)
         io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
     except openai.error.InvalidRequestError as e:
