@@ -58,7 +58,6 @@ def select_workflow(input_dir : str) -> Tuple[str,str]:
         yml = file.read()
     return (path, yml)
 
-
 def verify(earthfile: str, earthfile_path: str) -> None:
     debug_earthfile_path = os.path.join(constants.DEBUG_DIR, 'Earthfile')
     io.write(earthfile, debug_earthfile_path)
@@ -95,10 +94,10 @@ def main(input_dir: str, earthfile_path : str) -> None:
         verify(earthfile, earthfile_path)
         io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
     except openai.error.InvalidRequestError as e:
-        print("We were unable to convert this workflow.")
+        print("Error: We were unable to convert this workflow.")
         io.log(f"Error Type: openai.error.InvalidRequestError \n Error details: {e}")
     except (ValueError, TypeError, IndexError, KeyError) as e:
-        print("An unexpected error occurred.")
+        print("Error: We were unable to convert this workflow.")
         trace = traceback.format_exc()
         io.log(f"Error Type: {type(e).__name__} \n Error details: {e}")
         io.log(f"Stack Trace: {trace}")
