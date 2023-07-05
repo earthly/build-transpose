@@ -1,8 +1,10 @@
 from textwrap import dedent
 import argparse
 import inquirer
+import subprocess
 from typing import Tuple
 import openai
+import os
 import traceback
 
 from toearthly.core import io, gha_to_bash_prompt, constants, boot # noqa: F401
@@ -57,11 +59,17 @@ def select_workflow(input_dir : str) -> Tuple[str,str]:
     return (path, yml)
 
 
+def verify(earthfile: str, earthfile_path: str) -> None:
+    debug_earthfile_path = os.path.join(constants.DEBUG_DIR, 'Earthfile')
+    io.write(earthfile, debug_earthfile_path)
+    result = subprocess.run(['earthly', 'debug', 'ast', debug_earthfile_path], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise ValueError(f"Verification failed with errors:\n{result.stderr}")
+
 def main(input_dir: str, earthfile_path : str) -> None:
     try:
         print(intro)
         path, yml = select_workflow(input_dir)
-
         print(dedent(f"""
               Input:
               Workflow:\t{path}
@@ -84,11 +92,12 @@ def main(input_dir: str, earthfile_path : str) -> None:
 
         print("Running Stage 3")
         earthfile = gha_to_bash_prompt.prompt3(earthfile, yml, file_structure)
+        verify(earthfile, earthfile_path)
         io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
     except openai.error.InvalidRequestError as e:
         print("We were unable to convert this workflow.")
         io.log(f"Error Type: openai.error.InvalidRequestError \n Error details: {e}")
-    except Exception as e:
+    except (ValueError, TypeError, IndexError, KeyError) as e:
         print("An unexpected error occurred.")
         trace = traceback.format_exc()
         io.log(f"Error Type: {type(e).__name__} \n Error details: {e}")
