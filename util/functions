@@ -3,5 +3,3 @@
 # source this file, to setup shell for local dev
 
 export PYTHONPATH=$(pwd):$PYTHONPATH
-
-
