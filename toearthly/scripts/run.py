@@ -91,7 +91,8 @@ def main(input_dir: str, earthfile_path : str) -> None:
     except Exception as e:
         print("An unexpected error occurred.")
         trace = traceback.format_exc()
-        io.log(f"Error Type: {type(e).__name__} \n Error details: {e} \n Stack Trace: {trace}")
+        io.log(f"Error Type: {type(e).__name__} \n Error details: {e}")
+        io.log(f"Stack Trace: {trace}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
