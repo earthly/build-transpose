@@ -1,0 +1,6 @@
+openai
+requests-cache
+joblib
+python-dotenv
+guidance
+pycryptodome
