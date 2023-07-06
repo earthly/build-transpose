@@ -11,6 +11,11 @@ earthly_basics = io.relative_read("data/earthly_docs/basics.md")
 earthly_reference = io.relative_read("data/earthly_docs/summary.md")
 earthly_tips = io.relative_read("data/earthly_docs/tips.md")
 
+docker1 = io.relative_read("data/docker_simple2/Dockerfile")
+workflow1 = io.relative_read("data/docker_simple2/workflow.yml")
+plan1 = io.relative_read("data/docker_simple2/dockerfile_to_earthfile/plan.md")
+result1 = io.relative_read("data/docker_simple2/dockerfile_to_earthfile/result.md")
+
 def prompt(docker: str, build: str) -> str:
     program = guidance(
         dedent(
@@ -31,6 +36,33 @@ def prompt(docker: str, build: str) -> str:
       arguments may be relevant. The rest should be ignored.
 
     {{~/system}}
+     {{#user~}}
+    Github Actions Workflow:
+    ```
+    {{workflow1}}
+    ```
+
+    Dockerfile:
+    ```Dockerfile
+    {{docker1}}
+    ```
+
+    Task:
+    Do not produce the Earthfile. Instead, describe how you would approach this
+    problem. Then go through the files, step by step, and discuss how the steps should
+    be ported to an Earthfile.
+
+    Let me go step by step through the dockerfile and convert it to a Earthfile.
+    {{~/user}}
+    {{#assistant~}}
+    {{plan1}}
+    {{~/assistant}}
+    {{#user~}}
+    Ok, produce the Earthfile in backticks.
+    {{~/user}}
+    {{#assistant~}}
+    {{result1}}
+    {{~/assistant}}
     {{#user~}}
     Github Actions Workflow:
     ```
@@ -67,6 +99,10 @@ def prompt(docker: str, build: str) -> str:
         earthly_basics=earthly_basics,
         earthly_reference=earthly_reference,
         earthly_tips=earthly_tips,
+        docker1=docker1,
+        workflow1=workflow1,
+        plan1=plan1,
+        result1=result1,
         docker=docker,
         build=build,
     )
