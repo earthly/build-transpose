@@ -43,67 +43,36 @@ I'll prioritize these based on feedback. So reach out on slack or via adam@earth
 or via https://github.com/adamgordonbell/to-earthly
 """
 
-
-def select_workflow(input_dir: str) -> Tuple[str, str]:
-    ymls = io.find_workflows(input_dir)
-    if len(ymls) != 1:
-        questions = [
-            inquirer.List(
-                "option",
-                message="Select a github workflow",
-                choices=ymls,
-            ),
-        ]
-        answers = inquirer.prompt(questions)
-        path = answers["option"]
-    else:
-        path = ymls[0]
-    with open(path, "r") as file:
-        yml = file.read()
-    return (path, yml)
-
-
-def verify(earthfile: str) -> None:
-    debug_earthfile_path = os.path.join(constants.DEBUG_DIR, "Earthfile")
-    io.write(earthfile, debug_earthfile_path)
-    result = subprocess.run(
-        ["earthly", "debug", "ast", debug_earthfile_path],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise ValueError(f"Verification failed with errors:\n{result.stderr}")
-
-
 def main(input_dir: str, earthfile_path: str) -> None:
     try:
         print(intro)
-        path, yml = select_workflow(input_dir)
+        dockerfile_path, dockerfile_content = io.find_first_dockerfile(input_dir)
+        workflow_path, workflow_content = select_workflow(input_dir)
         print(
             dedent(
                 f"""
               Input:
-              Workflow:\t{path}
+              DockerFile:\t{dockerfile_path}
+              Related Workflow:\t{workflow_path}
               Output:\t\t{earthfile_path}
               Debug files:\t{constants.DEBUG_DIR}
               """
             )
         )
-        file_structure = io.print_directory(input_dir)
 
         print("Starting...\n (This may take 10 minutes)")
-        print("Running Stage 1 - GitHub Actions to Bash")
-        runfile, dockerfile, buildfile = gha_to_bash.prompt(yml, file_structure)
+        print("Running Stage 1 - Dockerfile To Earthfile")
+        # runfile, dockerfile, buildfile = gha_to_bash.prompt(yml, file_structure)
 
-        print("Running Stage 2 - Bash to Earthly")
-        earthfile = bash_to_earthly.prompt(
-            file_structure, runfile, dockerfile, buildfile
-        )
+        # print("Running Stage 2 - Bash to Earthly")
+        # earthfile = bash_to_earthly.prompt(
+        #     file_structure, runfile, dockerfile, buildfile
+        # )
 
-        print("Running Stage 3 - Earthfile Correction")
-        earthfile = earthfile_correction.prompt(earthfile, yml, file_structure)
-        verify(earthfile)
-        io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
+        # print("Running Stage 3 - Earthfile Correction")
+        # earthfile = earthfile_correction.prompt(earthfile, yml, file_structure)
+        # verify(earthfile)
+        # io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
     except openai.error.InvalidRequestError as e:
         print("Error: We were unable to convert this workflow.")
         io.log(f"Error Type: openai.error.InvalidRequestError \n Error details: {e}")

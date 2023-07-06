@@ -109,7 +109,7 @@ def find_workflows(path=None) -> List[str]:
     return yml_files
 
 
-def find_first_dockerfile(path=None) -> str:
+def find_first_dockerfile(path=None) -> Tuple[str, str]:
     if path is None:
         path = os.getcwd()
 
@@ -124,7 +124,7 @@ def find_first_dockerfile(path=None) -> str:
     with open(docker_files[0], "r") as file:
         dockerfile = file.read()
     write_debug("Dockerfile", dockerfile)
-    return dockerfile
+    return (docker_files[0], dockerfile)
 
 
 # Like tree but less output
