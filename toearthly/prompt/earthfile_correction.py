@@ -1,6 +1,5 @@
 import contextlib
 from textwrap import dedent
-from typing import Tuple
 
 import guidance
 

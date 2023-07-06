@@ -9,7 +9,7 @@ import inquirer
 import openai
 
 from toearthly.core import boot, constants, io  # noqa: F401
-from toearthly.prompt import gha_to_bash, bash_to_earthly, earthfile_correction
+from toearthly.prompt import bash_to_earthly, earthfile_correction, gha_to_bash
 
 # Default directories
 DEFAULT_INPUT_DIR = "/input/"
