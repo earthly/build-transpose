@@ -1,15 +1,11 @@
 import argparse
-import os
-import subprocess
 import traceback
 from textwrap import dedent
-from typing import Tuple
 
-import inquirer
 import openai
 
 from toearthly.core import boot, constants, io  # noqa: F401
-from toearthly.prompt import bash_to_earthly, earthfile_correction, gha_to_bash
+from toearthly.prompt import dockerfile_to_earthfile
 
 # Default directories
 DEFAULT_INPUT_DIR = "/input/"
@@ -47,7 +43,7 @@ def main(input_dir: str, earthfile_path: str) -> None:
     try:
         print(intro)
         dockerfile_path, dockerfile_content = io.find_first_dockerfile(input_dir)
-        workflow_path, workflow_content = select_workflow(input_dir)
+        workflow_path, workflow_content = io.find_first_workflow(input_dir)
         print(
             dedent(
                 f"""
@@ -62,17 +58,10 @@ def main(input_dir: str, earthfile_path: str) -> None:
 
         print("Starting...\n (This may take 10 minutes)")
         print("Running Stage 1 - Dockerfile To Earthfile")
-        # runfile, dockerfile, buildfile = gha_to_bash.prompt(yml, file_structure)
+        earthfile = dockerfile_to_earthfile.prompt(dockerfile_content, workflow_content)
 
-        # print("Running Stage 2 - Bash to Earthly")
-        # earthfile = bash_to_earthly.prompt(
-        #     file_structure, runfile, dockerfile, buildfile
-        # )
-
-        # print("Running Stage 3 - Earthfile Correction")
-        # earthfile = earthfile_correction.prompt(earthfile, yml, file_structure)
-        # verify(earthfile)
-        # io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
+        io.verify(earthfile)
+        io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
     except openai.error.InvalidRequestError as e:
         print("Error: We were unable to convert this workflow.")
         io.log(f"Error Type: openai.error.InvalidRequestError \n Error details: {e}")

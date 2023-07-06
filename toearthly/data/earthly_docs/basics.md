@@ -2,7 +2,7 @@
 
 Below you'll find a simple example of an Earthfile. Existing Dockerfiles can easily be ported to Earthly by copying them to an Earthfile and tweaking them slightly.
 
-```Dockerfile
+```Earthfile
 VERSION 0.7
 FROM golang:1.15-alpine3.13
 WORKDIR /go-workdir
@@ -23,35 +23,23 @@ docker:
 We'll slowly build up to the Earthfile we have above. Let's start with these first three lines.
 
 `./tutorial/Earthfile`
-```Dockerfile
+```Earthfile
 VERSION 0.7
 FROM golang:1.15-alpine3.13
 WORKDIR /go-workdir
 ```
-And some simple Hello World code in a `main.go`.
-
-```go
-package main
-
-import "fmt"
-
-func main() {
-	fmt.Println("hello world")
-}
-```
-Earthfiles are always named Earthfile, regardless of their location in the codebase. 
 
 The Earthfile starts off with a version definition. This will tell Earthly which features to enable and which ones not to so that the build script maintains compatibility over time, even if Earthly itself is updated.
 
 The first commands in the file are part of the `base` target and are implicitly inherited by all other targets. Targets are just sets of instructions we can call on from within the Earthfile, or when we run Earthly at the command line.
 
-
 ## Creating Your First Targets
+
 Earthly aims to replace Dockerfile, makefile, bash scripts and more. We can take all the setup, configuration and build steps we'd normally define in those files and put them in our Earthfile in the form of `targets`.
 
 Let's start by defining a target to build our simple Go app.
 
-```Dockerfile
+```Earthfile
 build:
     COPY main.go .
     RUN go build -o output/example main.go
@@ -66,7 +54,7 @@ Finally, we save the output of the build command as an artifact. The syntax for 
 
 Now let's create a new target called `+docker`.
 
-```Dockerfile
+```
 docker:
     COPY +build/example .
     ENTRYPOINT ["/go-workdir/example"]
@@ -81,7 +69,7 @@ Lastly, we save the current state as a docker image, which will have the docker 
 
 Notice how we already had Go installed for both our `+build` and `+docker` targets. This is because  targets inherit from the base target which for us was the `FROM golang:1.15-alpine3.13` that we set up at the top of the file. But it's worth noting that targets can define their own environments. For example:
 
-```Dockerfile
+```Earthfile
 VERSION 0.7
 FROM golang:1.15-alpine3.13
 WORKDIR /go-workdir
@@ -104,14 +92,16 @@ In this example, the `+build` target does not have a `FROM`, so it inherits from
 The target `+npm`, on the other hand, specifies its own environment with the `FROM`command and so will run inside of a `node:12-alpine3.12` container.
 
 ## Not All Targets Produce Output
+
 Targets have the ability to produce output outside of the build environment. You can save files and docker images to your local machine or push them to remote repositories. Targets can also run commands that affect the local environment outside of the build, such as running database migrations, but not all targets produce output. 
 
 ## Saving Files
+
 We've already seen how the command SAVE ARTIFACT copies a file or directory from the build environment into the target's artifact environment.
 
 This gives us the ability to copy files between targets, **but it does not allow us to save any files to our local machine.**
 
-```Dockerfile
+```Earthfile
 build:
     COPY main.go .
     RUN go build -o output/example main.go
@@ -125,7 +115,7 @@ docker:
 ```
 In order to **save the file locally** , we need to add `AS LOCAL` to the command.
 
-```Dockerfile
+```Earthfile
 build:
     COPY main.go .
     RUN go build -o output/example main.go
@@ -133,9 +123,10 @@ build:
 ```
 
 ## Saving Docker Images
+
 Saving Docker images to your local machine is easy with the `SAVE IMAGE` command.
 
-```Dockerfile
+```Earthfile
 build:
     COPY main.go .
     RUN go build -o output/example main.go
@@ -151,7 +142,7 @@ docker:
 
 In addition to saving files and images locally, we can also push them to remote repositories.
 
-```Dockerfile
+```Earthfile
 docker:
     COPY +build/example .
     ENTRYPOINT ["/go-workdir/example"]
@@ -164,7 +155,7 @@ You can also use `--push` as part of a `RUN` command to define commands that hav
 
 This allows you to push to remote repositories. 
 
-```Dockerfile
+```Earthfile
 release:
     RUN --push --secret GITHUB_TOKEN=GH_TOKEN github-release upload
 ```
@@ -173,7 +164,7 @@ earthly --push +release
 ```
 But also allows you to do things like run database migrations.
 
-```Dockerfile
+```Earthfile
 migrate:
     FROM +build
     RUN --push bundle exec rails db:migrate
@@ -183,7 +174,7 @@ earthly --push +migrate
 ```
 Or apply terraform changes
 
-```Dockerfile
+```Earthfile
 apply:
     RUN --push terraform apply -auto-approve
 ```
@@ -194,26 +185,11 @@ earthly --push +apply
 ## Dependencies
 Now let's imagine that we want to add some dependencies to our app. In Go, that means adding `go.mod` and `go.sum`. 
 
-`./go.mod`
-
-```go.mod
-module github.com/earthly/earthly/examples/go
-
-go 1.13
-
-require github.com/sirupsen/logrus v1.5.0
-```
-
-`./go.sum` (empty)
-
-```go.sum
-```
-
 Now we can update our Earthfile to copy in the `go.mod` and `go.sum`.
 
 `./Earthfile`
 
-```Dockerfile
+```Earthfile
 VERSION 0.7
 FROM golang:1.15-alpine3.13
 WORKDIR /go-workdir
@@ -235,9 +211,7 @@ This works, but it is inefficient because we have not made proper use of caching
 
 If, however, we could first download the dependencies and only afterwards copy and build the code, then the cache would be reused every time we changed the code.
 
-`./Earthfile`
-
-```Dockerfile
+```Earthfile
 VERSION 0.7
 FROM golang:1.15-alpine3.13
 WORKDIR /go-workdir
@@ -261,9 +235,7 @@ docker:
 
 In some cases, the dependencies might be used in more than one build target. For this use case, we might want to separate dependency downloading and reuse it. For this reason, let's consider breaking this out into a separate target called `+deps`. We can then inherit from `+deps` by using the command `FROM +deps`.
 
-`./Earthfile`
-
-```Dockerfile
+```Earthfile
 VERSION 0.7
 FROM golang:1.15-alpine3.13
 WORKDIR /go-workdir
@@ -287,13 +259,13 @@ docker:
     SAVE IMAGE go-example:latest
 ```
 
-## Just Like Docker...Mostly
+## Args are like in Docker ... Mostly
 
-`ARG`s in Earthly work similar to `ARG`s in Dockerfiles, however there are a few differences when it comes to scope. Also, Earthly has a number of [built in `ARG`s](../earthfile/builtin-args.md) that are available to use.
+`ARG`s in Earthly work similar to `ARG`s in Dockerfiles, however there are a few differences when it comes to scope.
 
 Let's say we wanted to have the option to pass in a tag for our Docker image when we run `earthly +docker`.
 
-```Dockerfile
+```Earthfile
 docker:
     ARG tag='latest'
     COPY +build/example .
@@ -311,9 +283,10 @@ earthly +docker --tag='my-new-image-tag'
 ```
 
 ### Passing ARGs in FROM, BUILD, and COPY
+
 We can also pass `ARG`s when referencing a target inside an Earthfile. Using the `FROM` and `BUILD` commands, this looks pretty similar to what we did above on the command line.
 
-```Dockerfile
+```Earthfile
 docker:
     ARG tag='latest'
     COPY +build/example .
@@ -328,7 +301,7 @@ with-from:
 ```
 We can also pass `ARG`s when using the `COPY` command, though the syntax is a little different.
 
-```Dockerfile
+```Earthfile
 build:
     ARG version
     COPY main.go .
@@ -338,21 +311,3 @@ build:
 with-copy:
     COPY (+build/example --version='1.0') .
 ```
-## The `WITH DOCKER` Command
-
-You may find that you need to run Docker commands inside of a target. For those cases Earthly offers `WITH DOCKER`. `WITH DOCKER` will initialize a Docker daemon that can be used in the context of a `RUN` command.
-
-Whenever you need to use `WITH DOCKER` we recommend (though it is not required) that you use Earthly's own Docker in Docker (dind) image: `earthly/dind:alpine`.
-
-Notice `WITH DOCKER` creates a block of code that has an `END` keyword. Everything that happens within this block is going to take place within our `earthly/dind:alpine` container.
-
-### Pulling an Image
-```Dockerfile
-hello:
-    FROM earthly/dind:alpine
-    WITH DOCKER --pull hello-world
-        RUN docker run hello-world
-    END
-
-```
-You can see in the command above that we can pass a flag to `WITH DOCKER` telling it to pull an image from Docker Hub. We can pass other flags to [load in artifacts built by other targets](#loading-an-image) `--load` or even images defined by [docker-compose](#a-real-world-example) `--compose`. These images will be available within the context of `WITH DOCKER`'s docker daemon.

@@ -1,9 +1,10 @@
+import contextlib
 import glob
 import os
+import subprocess
 import time
 from collections import defaultdict
 from typing import List, Tuple
-import contextlib
 
 import openai
 from joblib import Memory
@@ -80,7 +81,7 @@ def write_debug(filename: str, contents: str, subfolder: str = None) -> None:
         outfile.write(contents)
 
 
-def find_first_yml(path=None) -> Tuple[str, str]:
+def find_first_workflow(path=None) -> Tuple[str, str]:
     if path is None:
         path = os.getcwd()
 
@@ -95,7 +96,7 @@ def find_first_yml(path=None) -> Tuple[str, str]:
     with open(yml_files[0], "r") as file:
         yml = file.read()
     write_debug("workflow.yml", yml)
-    return (yml, yml_files[0])
+    return (yml_files[0], yml)
 
 
 def find_workflows(path=None) -> List[str]:
@@ -183,3 +184,14 @@ def run_llm_program(program, *args, **kwargs):
         f
     ), contextlib.redirect_stderr(f):
         return program(*args, **kwargs)
+
+def verify(earthfile: str) -> None:
+    debug_earthfile_path = os.path.join(constants.DEBUG_DIR, "Earthfile")
+    write(earthfile, debug_earthfile_path)
+    result = subprocess.run(
+        ["earthly", "debug", "ast", debug_earthfile_path],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise ValueError(f"Verification failed with errors:\n{result.stderr}")

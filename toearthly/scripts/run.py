@@ -1,6 +1,4 @@
 import argparse
-import os
-import subprocess
 import traceback
 from textwrap import dedent
 from typing import Tuple
@@ -62,19 +60,6 @@ def select_workflow(input_dir: str) -> Tuple[str, str]:
         yml = file.read()
     return (path, yml)
 
-
-def verify(earthfile: str) -> None:
-    debug_earthfile_path = os.path.join(constants.DEBUG_DIR, "Earthfile")
-    io.write(earthfile, debug_earthfile_path)
-    result = subprocess.run(
-        ["earthly", "debug", "ast", debug_earthfile_path],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise ValueError(f"Verification failed with errors:\n{result.stderr}")
-
-
 def main(input_dir: str, earthfile_path: str) -> None:
     try:
         print(intro)
@@ -102,7 +87,7 @@ def main(input_dir: str, earthfile_path: str) -> None:
 
         print("Running Stage 3 - Earthfile Correction")
         earthfile = earthfile_correction.prompt(earthfile, yml, file_structure)
-        verify(earthfile)
+        io.verify(earthfile)
         io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
     except openai.error.InvalidRequestError as e:
         print("Error: We were unable to convert this workflow.")

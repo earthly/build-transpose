@@ -1,20 +1,19 @@
-import contextlib
 from textwrap import dedent
 from typing import Tuple
 
 import guidance
 
-from toearthly.core import constants, io, markdown
+from toearthly.core import io, markdown
 
 gpt4 = guidance.llms.OpenAI("gpt-4")
 
 input1 = io.relative_read("data/python_lint/workflow.yml")
-cot1 = io.relative_read("data/python_lint/gha_to_bash_prompt_plan.md")
-result1 = io.relative_read("data/python_lint/gha_to_bash_prompt_result.md")
+cot1 = io.relative_read("data/python_lint/gha_to_bash/plan.md")
+result1 = io.relative_read("data/python_lint/gha_to_bash/result.md")
 
 input2 = io.relative_read("data/docker_simple/workflow.yml")
-cot2 = io.relative_read("data/docker_simple/gha_to_bash_prompt_plan.md")
-result2 = io.relative_read("data/docker_simple/gha_to_bash_prompt_result.md")
+cot2 = io.relative_read("data/docker_simple/gha_to_bash/plan.md")
+result2 = io.relative_read("data/docker_simple/gha_to_bash/result.md")
 
 def prompt(gha: str, files: str) -> Tuple[str, str, str]:
     program = guidance(

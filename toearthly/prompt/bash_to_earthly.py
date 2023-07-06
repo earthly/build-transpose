@@ -3,7 +3,7 @@ from textwrap import dedent
 
 import guidance
 
-from toearthly.core import constants, io, markdown
+from toearthly.core import io, markdown
 
 gpt4 = guidance.llms.OpenAI("gpt-4")
 
@@ -12,7 +12,7 @@ earthly_reference = io.relative_read("data/earthly_docs/summary.md")
 earthly_tips = io.relative_read("data/earthly_docs/tips.md")
 
 input1 = io.relative_read("data/python_lint/files.md")
-cot1 = io.relative_read("data/python_lint/EarthfilePlan.md")
+cot1 = io.relative_read("data/python_lint/bash_to_earthly/plan.md")
 result1 = io.relative_read("data/python_lint/Earthfile")
 
 def prompt(files: str, run: str, docker: str, build: str) -> str:

@@ -1,9 +1,8 @@
-import contextlib
 from textwrap import dedent
 
 import guidance
 
-from toearthly.core import constants, io, markdown
+from toearthly.core import io, markdown
 
 gpt4 = guidance.llms.OpenAI("gpt-4")
 
