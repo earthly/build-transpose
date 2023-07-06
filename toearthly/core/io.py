@@ -70,9 +70,12 @@ def write(contents: str, filepath: str) -> None:
         outfile.write(contents)
 
 
-def write_debug(filename: str, contents: str) -> None:
-    filepath = os.path.join(constants.DEBUG_DIR, filename)
-    os.makedirs(constants.DEBUG_DIR, exist_ok=True)
+def write_debug(filename: str, contents: str, subfolder: str = None) -> None:
+    debug_dir = constants.DEBUG_DIR
+    if subfolder is not None:
+        debug_dir = os.path.join(debug_dir, subfolder)
+    filepath = os.path.join(debug_dir, filename)
+    os.makedirs(debug_dir, exist_ok=True)
     with open(filepath, "w") as outfile:
         outfile.write(contents)
 
