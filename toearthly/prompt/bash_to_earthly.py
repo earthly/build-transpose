@@ -104,10 +104,11 @@ def prompt(files: str, run: str, docker: str, build: str) -> str:
         docker=docker,
         build=build,
     )
-    io.write_debug("EarthfilePlan.md", out["discuss"])
+    io.write_debug("plan.md", out["discuss"], "bash_to_earthly")
+    io.write_debug("result.md", out["Earthfile"], "bash_to_earthly")
     results = markdown.extract_code_blocks(out["Earthfile"])
     if len(results) != 1:
         raise ValueError(f"1 Files exepected back. Instead got {len(results)}.")
     earthfile = results[0]
-    io.write_debug("Earthfile.1", earthfile)
+    io.write_debug("Earthfile", earthfile, "bash_to_earthly")
     return earthfile

@@ -144,12 +144,12 @@ def prompt(gha: str, files: str) -> Tuple[str, str, str]:
         cot2=cot2,
         result2=result2,
     )
-    io.write_debug("gha_to_bash_prompt_plan.md", out["discuss"])
-    io.write_debug("gha_to_bash_prompt_result.md", out["files"])
+    io.write_debug("plan.md", out["discuss"], "gha_to_bash")
+    io.write_debug("result.md", out["files"], "gha_to_bash")
     results = markdown.extract_code_blocks(out["files"])
     if len(results) != 3:
         raise ValueError(f"3 Files exepected back. Instead got {len(results)}")
-    io.write_debug("run.sh", results[0])
-    io.write_debug("build.Dockerfile", results[1])
-    io.write_debug("build.sh", results[2])
+    io.write_debug("run.sh", results[0], "gha_to_bash")
+    io.write_debug("build.Dockerfile", results[1], "gha_to_bash")
+    io.write_debug("build.sh", results[2], "gha_to_bash")
     return (results[0], results[1], results[2])

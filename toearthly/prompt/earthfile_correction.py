@@ -79,8 +79,11 @@ def prompt(earthfile: str, gha: str, files: str) -> str:
         gha=gha,
         earthfile=earthfile,
     )
-    io.write_debug("EarthfileFixPlan.md", out["discuss"])
+    io.write_debug("plan.md", out["discuss"], "earthfile_correction")
+    io.write_debug("result.md", out["earthfile"], "earthfile_correction")
     results = markdown.extract_code_blocks(out["Earthfile"])
     if len(results) != 1:
         raise ValueError(f"1 Files exepected back. Instead got {len(results)}.")
-    return results[0]
+    earthfile = results[0]
+    io.write_debug("Earthfile", earthfile, "earthfile_correction")
+    return earthfile
