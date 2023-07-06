@@ -115,7 +115,7 @@ def main(input_dir: str, earthfile_path: str) -> None:
         io.log(f"Stack Trace: {trace}")
 
 
-if __name__ == "__main__":
+def get_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input_dir", help="Base file location", default=DEFAULT_INPUT_DIR
@@ -126,6 +126,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--debug_dir", help="Debug directory location", default=DEFAULT_DEBUG_DIR
     )
+    return parser
+
+if __name__ == "__main__":
+    parser = get_arg_parser()
     args = parser.parse_args()
 
     constants.DEBUG_DIR = args.debug_dir
