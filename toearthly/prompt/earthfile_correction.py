@@ -7,18 +7,12 @@ from toearthly.core import constants, io, markdown
 
 gpt4 = guidance.llms.OpenAI("gpt-4")
 
-def call_identify(identify, *args, **kwargs):
-    with open(constants.DEBUG_DIR + "log.txt", "a") as f, contextlib.redirect_stdout(
-        f
-    ), contextlib.redirect_stderr(f):
-        return identify(*args, **kwargs)
-
 earthly_basics = io.relative_read("data/earthly_docs/basics.md")
 earthly_reference = io.relative_read("data/earthly_docs/summary.md")
 earthly_tips = io.relative_read("data/earthly_docs/tips.md")
 
 def prompt(earthfile: str, gha: str, files: str) -> str:
-    identify = guidance(
+    program = guidance(
         dedent(
             """
         {{#system~}}
@@ -77,8 +71,8 @@ def prompt(earthfile: str, gha: str, files: str) -> str:
         ),
         llm=gpt4,
     )
-    out = call_identify(
-        identify,
+    out = io.run_llm_program(
+        program,
         earthly_basics=earthly_basics,
         earthly_tips=earthly_tips,
         files=files,

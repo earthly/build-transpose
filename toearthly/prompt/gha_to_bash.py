@@ -16,15 +16,8 @@ input2 = io.relative_read("data/docker_simple/workflow.yml")
 cot2 = io.relative_read("data/docker_simple/gha_to_bash_prompt_plan.md")
 result2 = io.relative_read("data/docker_simple/gha_to_bash_prompt_result.md")
 
-
-def call_identify(identify, *args, **kwargs):
-    with open(constants.DEBUG_DIR + "log.txt", "a") as f, contextlib.redirect_stdout(
-        f
-    ), contextlib.redirect_stderr(f):
-        return identify(*args, **kwargs)
-
 def prompt(gha: str, files: str) -> Tuple[str, str, str]:
-    identify = guidance(
+    program = guidance(
         dedent(
             """
     {{#system~}}
@@ -140,8 +133,8 @@ def prompt(gha: str, files: str) -> Tuple[str, str, str]:
         llm=gpt4,
     )
 
-    out = call_identify(
-        identify,
+    out = io.run_llm_program(
+        program,
         gha=dedent(gha),
         files=files,
         input1=input1,

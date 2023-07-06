@@ -3,6 +3,7 @@ import os
 import time
 from collections import defaultdict
 from typing import List, Tuple
+import contextlib
 
 import openai
 from joblib import Memory
@@ -173,3 +174,9 @@ def log(message: str) -> None:
 
     with open(log_file_path, "a") as log_file:
         log_file.write(message + "\n")
+
+def run_llm_program(program, *args, **kwargs):
+    with open(constants.DEBUG_DIR + "log.txt", "a") as f, contextlib.redirect_stdout(
+        f
+    ), contextlib.redirect_stderr(f):
+        return program(*args, **kwargs)
