@@ -7,7 +7,13 @@ import inquirer
 import openai
 
 from toearthly.core import boot, constants, io  # noqa: F401
-from toearthly.prompt import bash_to_earthly, earthfile_correction, gha_to_bash, merge, dockerfile_to_earthfile
+from toearthly.prompt import (
+    bash_to_earthly,
+    dockerfile_to_earthfile,
+    earthfile_correction,
+    gha_to_bash,
+    merge,
+)
 
 # Default directories
 DEFAULT_INPUT_DIR = "/input/"
@@ -95,13 +101,13 @@ def main(input_dir: str, earthfile_path: str) -> None:
               """
             )
         )
-        file_structure = io.print_directory(input_dir) 
+        file_structure = io.print_directory(input_dir)
 
         print("Starting Workflow Conversion...\n (This may take 10 minutes)")
         earthfile1 = workflow_convert(workflow_content, file_structure)
-        
+
         print("\nStarting Dockerfile Conversion...")
-        earthfile2 = dockerfile_convert(dockerfile_content, workflow_content) 
+        earthfile2 = dockerfile_convert(dockerfile_content, workflow_content)
 
         print("Merging Earthfiles...\n")
         earthfile = merge.prompt(earthfile1, "workflow.yml", earthfile2, "Dockerfile")

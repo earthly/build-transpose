@@ -14,36 +14,36 @@ earthly_tips = io.relative_read("data/earthly_docs/tips.md")
 examples = [{
         "docker":   io.relative_read("data/docker_simple2/Dockerfile"),
         "workflow": io.relative_read("data/docker_simple2/workflow.yml"),
-        "plan":     io.relative_read("data/docker_simple2/dockerfile_to_earthfile/plan.md"),
-        "result":   io.relative_read("data/docker_simple2/dockerfile_to_earthfile/result.md")
+        "plan":     io.relative_read("data/docker_simple2/dockerfile_to_earthfile/plan.md"),  # noqa: E501
+        "result":   io.relative_read("data/docker_simple2/dockerfile_to_earthfile/result.md")  # noqa: E501
     },
     {
         "docker":   io.relative_read("data/docker_multistage1/Dockerfile"),
         "workflow": io.relative_read("data/docker_multistage1/workflow.yml"),
-        "plan":     io.relative_read("data/docker_multistage1/dockerfile_to_earthfile/plan.md"),
-        "result":   io.relative_read("data/docker_multistage1/dockerfile_to_earthfile/result.md")
-    }, 
+        "plan":     io.relative_read("data/docker_multistage1/dockerfile_to_earthfile/plan.md"),  # noqa: E501
+        "result":   io.relative_read("data/docker_multistage1/dockerfile_to_earthfile/result.md")  # noqa: E501
+    },
     {
         "docker":   io.relative_read("data/docker_multistage2/Dockerfile"),
         "workflow": io.relative_read("data/docker_multistage2/workflow.yml"),
-        "plan":     io.relative_read("data/docker_multistage2/dockerfile_to_earthfile/plan.md"),
-        "result":   io.relative_read("data/docker_multistage2/dockerfile_to_earthfile/result.md")
-    }, 
+        "plan":     io.relative_read("data/docker_multistage2/dockerfile_to_earthfile/plan.md"),  # noqa: E501
+        "result":   io.relative_read("data/docker_multistage2/dockerfile_to_earthfile/result.md")  # noqa: E501
+    },
     ]
 
 
 # Throws openai.error.InvalidRequestError
-# This model's maximum context length is 8192 tokens. However, you requested 8480 
-# tokens (7480 in the messages, 1000 in the completion). Please reduce the length 
+# This model's maximum context length is 8192 tokens. However, you requested 8480
+# tokens (7480 in the messages, 1000 in the completion). Please reduce the length
 # of the messages or completion.
 # ToDo: recover from this by downgrading to GPT3.5
-def prompt(docker: str, build: str) -> str: 
+def prompt(docker: str, build: str) -> str:
 
     program = guidance(
         dedent(
             """
     {{#system~}}
-    You are creating an Earthfile from a Dockerfile and a GitHub Actions workflow. I'll 
+    You are creating an Earthfile from a Dockerfile and a GitHub Actions workflow. I'll
     share Earthly documentation with you and then describe the conversion process.
 
     {{earthly_basics}}
@@ -52,7 +52,7 @@ def prompt(docker: str, build: str) -> str:
 
     You are creating an Earthfile from the following inputs.
     * A Dockerfile: each stage in the Dockerfile will become a target in the Earthfile.
-    * A GitHub Action workflow: This may not be needed. Only steps in workflow which 
+    * A GitHub Action workflow: This may not be needed. Only steps in workflow which
       describe docker actions like tagging or pushing or running docker with certain
       arguments may be relevant. The rest should be ignored.
 
@@ -72,12 +72,12 @@ def prompt(docker: str, build: str) -> str:
     Task:
     Do not produce the Earthfile. Instead, describe how you would approach this
     problem. Then go through the files, step by step, and discuss how the steps should
-    be ported to an Earthfile. 
-    
+    be ported to an Earthfile.
+
     Remember:
     - an Earthfile can't have a target named base.
-    - an Earthfile `COPY` from another target works like a Dockerfile multistage COPY 
-       but it has a different syntax. 
+    - an Earthfile `COPY` from another target works like a Dockerfile multistage COPY
+       but it has a different syntax.
     - To copy `example` from target `+build` use `COPY +build/example .`
     - Also, `example` will need to be saved using `SAVE ARTIFACT` in `+build`
 
@@ -111,8 +111,8 @@ def prompt(docker: str, build: str) -> str:
 
     Remember:
     - an Earthfile can't have a target named base.
-    - an Earthfile `COPY` from another target works like a Dockerfile multistage COPY 
-       but it has a different syntax. 
+    - an Earthfile `COPY` from another target works like a Dockerfile multistage COPY
+       but it has a different syntax.
     - To copy `example` from target `+build` use `COPY +build/example .`
     - Also, `example` will need to be saved using `SAVE ARTIFACT` in `+build`
 

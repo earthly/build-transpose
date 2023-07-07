@@ -31,10 +31,10 @@ def prompt(file1: str, name1: str, file2: str, name2: str) -> str:
             """
         {{#system~}}
         I need your help to merge Earthfiles.
-        If the files have different base `FROM`s, you'll have to include the `FROM` 
+        If the files have different base `FROM`s, you'll have to include the `FROM`
         statements in the targets where needed,
         You should also add any missing steps to the `all` target if any exists.
-        If two steps do the same thing, but with different target names, they can 
+        If two steps do the same thing, but with different target names, they can
         be combined.
 
         {{~/system}}
@@ -51,11 +51,11 @@ def prompt(file1: str, name1: str, file2: str, name2: str) -> str:
         ```Earthfile
         {{this.file2}}
 
-        If the have different bases, we will have to include the `FROM` statements in 
-        the targets where needed and we should also add any missing steps to the `all` 
-        target. 
+        If the have different bases, we will have to include the `FROM` statements in
+        the targets where needed and we should also add any missing steps to the `all`
+        target.
 
-        Please discuss the way to merge these two files and then give the merged file 
+        Please discuss the way to merge these two files and then give the merged file
         in backticks.
         {{~/user}}
         {{#assistant~}}
@@ -74,11 +74,11 @@ def prompt(file1: str, name1: str, file2: str, name2: str) -> str:
         ```Earthfile
         {{file2}}
 
-        If the have different bases, we will have to include the `FROM` statements in 
-        the targets where needed and we should also add any missing steps to the `all` 
-        target. 
+        If the have different bases, we will have to include the `FROM` statements in
+        the targets where needed and we should also add any missing steps to the `all`
+        target.
 
-        Please discuss the way to merge these two files and then give the merged file 
+        Please discuss the way to merge these two files and then give the merged file
         in backticks.
         ```
         {{~/user}}
