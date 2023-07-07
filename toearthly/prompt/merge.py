@@ -12,6 +12,13 @@ examples = [{
         "file2":     io.relative_read("data/merge/in1b.Earthfile"),
         "name2":    "Dockerfile",
         "result":   io.relative_read("data/merge/out1.md"),
+    },
+    {
+        "file1":   io.relative_read("data/merge/in2a.Earthfile"),
+        "name1":    "workflow.yml",
+        "file2":     io.relative_read("data/merge/in2b.Earthfile"),
+        "name2":    "Dockerfile",
+        "result":   io.relative_read("data/merge/out2.md"),
     }]
 
 def prompt(file1: str, name1: str, file2: str, name2: str) -> str:
