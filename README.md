@@ -22,3 +22,7 @@ Run in a repo with a GHA workflow and get an Earthfile
 ```
 docker run --rm -it --name my_container -v $(pwd):/input to-earthly
 ```
+
+# ToDo for Docker steps
+- merge problems
+- ship it

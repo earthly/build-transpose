@@ -1,5 +1,7 @@
+import contextlib
 import glob
 import os
+import subprocess
 import time
 from collections import defaultdict
 from typing import List, Tuple
@@ -69,14 +71,17 @@ def write(contents: str, filepath: str) -> None:
         outfile.write(contents)
 
 
-def write_debug(filename: str, contents: str) -> None:
-    filepath = os.path.join(constants.DEBUG_DIR, filename)
-    os.makedirs(constants.DEBUG_DIR, exist_ok=True)
+def write_debug(filename: str, contents: str, subfolder: str = None) -> None:
+    debug_dir = constants.DEBUG_DIR
+    if subfolder is not None:
+        debug_dir = os.path.join(debug_dir, subfolder)
+    filepath = os.path.join(debug_dir, filename)
+    os.makedirs(debug_dir, exist_ok=True)
     with open(filepath, "w") as outfile:
         outfile.write(contents)
 
 
-def find_first_yml(path=None) -> Tuple[str, str]:
+def find_first_workflow(path=None) -> Tuple[str, str]:
     if path is None:
         path = os.getcwd()
 
@@ -91,7 +96,7 @@ def find_first_yml(path=None) -> Tuple[str, str]:
     with open(yml_files[0], "r") as file:
         yml = file.read()
     write_debug("workflow.yml", yml)
-    return (yml, yml_files[0])
+    return (yml_files[0], yml)
 
 
 def find_workflows(path=None) -> List[str]:
@@ -109,7 +114,7 @@ def find_workflows(path=None) -> List[str]:
     return yml_files
 
 
-def find_first_dockerfile(path=None) -> str:
+def find_first_dockerfile(path=None) -> Tuple[str, str]:
     if path is None:
         path = os.getcwd()
 
@@ -119,12 +124,12 @@ def find_first_dockerfile(path=None) -> str:
     docker_files = glob.glob(path + "Dockerfile")
 
     if not docker_files:
-        return ""
+        return ("","")
 
     with open(docker_files[0], "r") as file:
         dockerfile = file.read()
     write_debug("Dockerfile", dockerfile)
-    return dockerfile
+    return (docker_files[0], dockerfile)
 
 
 # Like tree but less output
@@ -173,3 +178,25 @@ def log(message: str) -> None:
 
     with open(log_file_path, "a") as log_file:
         log_file.write(message + "\n")
+
+def run_llm_program(program, *args, **kwargs):
+    with open(constants.DEBUG_DIR + "log.txt", "a") as f, contextlib.redirect_stdout(
+        f
+    ), contextlib.redirect_stderr(f):
+        return program(*args, **kwargs)
+
+def verify(earthfile: str) -> None:
+    debug_earthfile_path = os.path.join(constants.DEBUG_DIR, "Earthfile")
+    write(earthfile, debug_earthfile_path)
+    result = subprocess.run(
+        ["earthly", "debug", "ast", debug_earthfile_path],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        error_message = f"Verification failed with errors:\n{result.stderr}"
+        if constants.VERIFY_EARTHFILE:
+            raise ValueError(error_message)
+        else:
+            print(error_message)
+            print("Continuing despite the verification failure.")

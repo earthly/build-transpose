@@ -1,30 +1,22 @@
-import contextlib
 from textwrap import dedent
 from typing import Tuple
 
 import guidance
 
-from toearthly.core import constants, io, markdown
+from toearthly.core import io, markdown
 
 gpt4 = guidance.llms.OpenAI("gpt-4")
 
 input1 = io.relative_read("data/python_lint/workflow.yml")
-cot1 = io.relative_read("data/python_lint/gha_to_bash_prompt_plan.md")
-result1 = io.relative_read("data/python_lint/gha_to_bash_prompt_result.md")
+cot1 = io.relative_read("data/python_lint/gha_to_bash/plan.md")
+result1 = io.relative_read("data/python_lint/gha_to_bash/result.md")
 
 input2 = io.relative_read("data/docker_simple/workflow.yml")
-cot2 = io.relative_read("data/docker_simple/gha_to_bash_prompt_plan.md")
-result2 = io.relative_read("data/docker_simple/gha_to_bash_prompt_result.md")
-
-
-def call_identify(identify, *args, **kwargs):
-    with open(constants.DEBUG_DIR + "log.txt", "a") as f, contextlib.redirect_stdout(
-        f
-    ), contextlib.redirect_stderr(f):
-        return identify(*args, **kwargs)
+cot2 = io.relative_read("data/docker_simple/gha_to_bash/plan.md")
+result2 = io.relative_read("data/docker_simple/gha_to_bash/result.md")
 
 def prompt(gha: str, files: str) -> Tuple[str, str, str]:
-    identify = guidance(
+    program = guidance(
         dedent(
             """
     {{#system~}}
@@ -140,8 +132,8 @@ def prompt(gha: str, files: str) -> Tuple[str, str, str]:
         llm=gpt4,
     )
 
-    out = call_identify(
-        identify,
+    out = io.run_llm_program(
+        program,
         gha=dedent(gha),
         files=files,
         input1=input1,
@@ -151,12 +143,12 @@ def prompt(gha: str, files: str) -> Tuple[str, str, str]:
         cot2=cot2,
         result2=result2,
     )
-    io.write_debug("gha_to_bash_prompt_plan.md", out["discuss"])
-    io.write_debug("gha_to_bash_prompt_result.md", out["files"])
+    io.write_debug("plan.md", out["discuss"], "gha_to_bash")
+    io.write_debug("result.md", out["files"], "gha_to_bash")
     results = markdown.extract_code_blocks(out["files"])
     if len(results) != 3:
         raise ValueError(f"3 Files exepected back. Instead got {len(results)}")
-    io.write_debug("run.sh", results[0])
-    io.write_debug("build.Dockerfile", results[1])
-    io.write_debug("build.sh", results[2])
+    io.write_debug("run.sh", results[0], "gha_to_bash")
+    io.write_debug("build.Dockerfile", results[1], "gha_to_bash")
+    io.write_debug("build.sh", results[2], "gha_to_bash")
     return (results[0], results[1], results[2])
