@@ -107,6 +107,9 @@ def get_arg_parser():
     parser.add_argument(
         "--debug_dir", help="Debug directory location", default=DEFAULT_DEBUG_DIR
     )
+    parser.add_argument(
+        "--verify", help="Verify Earthfile", default=True, type=bool
+    )
     return parser
 
 if __name__ == "__main__":

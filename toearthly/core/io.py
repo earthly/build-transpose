@@ -186,12 +186,13 @@ def run_llm_program(program, *args, **kwargs):
         return program(*args, **kwargs)
 
 def verify(earthfile: str) -> None:
-    debug_earthfile_path = os.path.join(constants.DEBUG_DIR, "Earthfile")
-    write(earthfile, debug_earthfile_path)
-    result = subprocess.run(
-        ["earthly", "debug", "ast", debug_earthfile_path],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise ValueError(f"Verification failed with errors:\n{result.stderr}")
+    if constants.VERIFY_EARTHFILE:
+        debug_earthfile_path = os.path.join(constants.DEBUG_DIR, "Earthfile")
+        write(earthfile, debug_earthfile_path)
+        result = subprocess.run(
+            ["earthly", "debug", "ast", debug_earthfile_path],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise ValueError(f"Verification failed with errors:\n{result.stderr}")
