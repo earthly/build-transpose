@@ -34,7 +34,7 @@ The analyze stage starts from the build stage and runs pyline and pytest. In an 
 ```Earthfile
 analyze:
   FROM +build
-  RUN pylint $(find src/ -name '*.py') && \
+  RUN pylint $(find src/ -type f -name '*.py') && \
     pytest
 ```
 
@@ -43,7 +43,7 @@ The two commands on one line, would read better in an Earthfile if split into tw
 ```Earthfile
 analyze:
   FROM +build
-  RUN pylint $(find src/ -name '*.py') 
+  RUN pylint $(find src/ -type f -name '*.py') 
   RUN pytest
 ```
 

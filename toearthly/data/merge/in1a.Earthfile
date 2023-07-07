@@ -18,7 +18,7 @@ runner:
 
 analyze:
   FROM +build
-  RUN pylint $(find src/ -name '*.py') 
+  RUN pylint $(find src/ -type f -name '*.py') 
   RUN pytest
 
 all:

@@ -17,5 +17,5 @@ RUN pip install pylint pytest
 
 FROM build AS analyze
 
-RUN pylint $(find src/ -name '*.py') && \
+RUN pylint $(find src/ -type f -name '*.py') && \
     pytest

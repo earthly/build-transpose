@@ -19,7 +19,7 @@ def main(input_dir: str, earthfile_path: str) -> None:
         file2 = io.relative_read("data/merge/in1b.Earthfile")
         print(
             dedent(
-                f"""
+              f"""
               Input:
               Earthfile1:\t{file1}
               Earthfile2:\t{file2}
