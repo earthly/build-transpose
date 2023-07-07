@@ -6,6 +6,7 @@ from toearthly.core import io, markdown
 
 gpt4 = guidance.llms.OpenAI("gpt-4")
 
+earthly_basics = io.relative_read("data/earthly_docs/basics.md")
 examples = [{
         "file1":   io.relative_read("data/merge/in1a.Earthfile"),
         "name1":    "workflow.yml",
@@ -30,6 +31,8 @@ def prompt(file1: str, name1: str, file2: str, name2: str) -> str:
         dedent(
             """
         {{#system~}}
+        Here is an explanation of Earthfiles:
+        {{earthly_basics}}
         I need your help to merge Earthfiles.
         If the files have different base `FROM`s, you'll have to include the `FROM`
         statements in the targets where needed,
@@ -91,6 +94,7 @@ def prompt(file1: str, name1: str, file2: str, name2: str) -> str:
     )
     out = io.run_llm_program(
         program,
+        earthly_basics=earthly_basics,
         file1=file1,
         name1=name1,
         file2=file2,
