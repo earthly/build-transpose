@@ -5,8 +5,8 @@ The base stage starts from a python image, sets the working directory, and some 
 
 ```Earthfile
 VERSION 0.7
-WORKDIR /app
 FROM python:3.9
+WORKDIR /app
 
 deps:
   COPY requirements.txt .

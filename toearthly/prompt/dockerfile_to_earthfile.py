@@ -11,12 +11,34 @@ earthly_basics = io.relative_read("data/earthly_docs/basics.md")
 earthly_reference = io.relative_read("data/earthly_docs/summary.md")
 earthly_tips = io.relative_read("data/earthly_docs/tips.md")
 
-docker1 = io.relative_read("data/docker_simple2/Dockerfile")
-workflow1 = io.relative_read("data/docker_simple2/workflow.yml")
-plan1 = io.relative_read("data/docker_simple2/dockerfile_to_earthfile/plan.md")
-result1 = io.relative_read("data/docker_simple2/dockerfile_to_earthfile/result.md")
+examples = [{
+        "docker":   io.relative_read("data/docker_simple2/Dockerfile"),
+        "workflow": io.relative_read("data/docker_simple2/workflow.yml"),
+        "plan":     io.relative_read("data/docker_simple2/dockerfile_to_earthfile/plan.md"),
+        "result":   io.relative_read("data/docker_simple2/dockerfile_to_earthfile/result.md")
+    },
+    {
+        "docker":   io.relative_read("data/docker_multistage1/Dockerfile"),
+        "workflow": io.relative_read("data/docker_multistage1/workflow.yml"),
+        "plan":     io.relative_read("data/docker_multistage1/dockerfile_to_earthfile/plan.md"),
+        "result":   io.relative_read("data/docker_multistage1/dockerfile_to_earthfile/result.md")
+    }, 
+    {
+        "docker":   io.relative_read("data/docker_multistage2/Dockerfile"),
+        "workflow": io.relative_read("data/docker_multistage2/workflow.yml"),
+        "plan":     io.relative_read("data/docker_multistage2/dockerfile_to_earthfile/plan.md"),
+        "result":   io.relative_read("data/docker_multistage2/dockerfile_to_earthfile/result.md")
+    }, 
+    ]
 
-def prompt(docker: str, build: str) -> str:
+
+# Throws openai.error.InvalidRequestError
+# This model's maximum context length is 8192 tokens. However, you requested 8480 
+# tokens (7480 in the messages, 1000 in the completion). Please reduce the length 
+# of the messages or completion.
+# ToDo: recover from this by downgrading to GPT3.5
+def prompt(docker: str, build: str) -> str: 
+
     program = guidance(
         dedent(
             """
@@ -25,7 +47,6 @@ def prompt(docker: str, build: str) -> str:
     share Earthly documentation with you and then describe the conversion process.
 
     {{earthly_basics}}
-    {{earthly_reference}}
     {{earthly_tips}}
     The tutorial is over. I will now describe the task.
 
@@ -36,33 +57,42 @@ def prompt(docker: str, build: str) -> str:
       arguments may be relevant. The rest should be ignored.
 
     {{~/system}}
-     {{#user~}}
+    {{~#each examples}}
+    {{#user~}}
     Github Actions Workflow:
     ```
-    {{workflow1}}
+    {{this.workflow}}
     ```
 
     Dockerfile:
     ```Dockerfile
-    {{docker1}}
+    {{this.docker}}
     ```
 
     Task:
     Do not produce the Earthfile. Instead, describe how you would approach this
     problem. Then go through the files, step by step, and discuss how the steps should
-    be ported to an Earthfile.
+    be ported to an Earthfile. 
+    
+    Remember:
+    - an Earthfile can't have a target named base.
+    - an Earthfile `COPY` from another target works like a Dockerfile multistage COPY 
+       but it has a different syntax. 
+    - To copy `example` from target `+build` use `COPY +build/example .`
+    - Also, `example` will need to be saved using `SAVE ARTIFACT` in `+build`
 
     Let me go step by step through the dockerfile and convert it to a Earthfile.
     {{~/user}}
     {{#assistant~}}
-    {{plan1}}
+    {{this.plan}}
     {{~/assistant}}
     {{#user~}}
     Ok, produce the Earthfile in backticks.
     {{~/user}}
     {{#assistant~}}
-    {{result1}}
+    {{this.result}}
     {{~/assistant}}
+    {{~/each}}
     {{#user~}}
     Github Actions Workflow:
     ```
@@ -78,6 +108,13 @@ def prompt(docker: str, build: str) -> str:
     Do not produce the Earthfile. Instead, describe how you would approach this
     problem. Then go through the files, step by step, and discuss how the steps should
     be ported to an Earthfile.
+
+    Remember:
+    - an Earthfile can't have a target named base.
+    - an Earthfile `COPY` from another target works like a Dockerfile multistage COPY 
+       but it has a different syntax. 
+    - To copy `example` from target `+build` use `COPY +build/example .`
+    - Also, `example` will need to be saved using `SAVE ARTIFACT` in `+build`
 
     Let me go step by step through the dockerfile and convert it to a Earthfile.
     {{~/user}}
@@ -99,10 +136,7 @@ def prompt(docker: str, build: str) -> str:
         earthly_basics=earthly_basics,
         earthly_reference=earthly_reference,
         earthly_tips=earthly_tips,
-        docker1=docker1,
-        workflow1=workflow1,
-        plan1=plan1,
-        result1=result1,
+        examples=examples,
         docker=docker,
         build=build,
     )

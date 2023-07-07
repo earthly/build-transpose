@@ -2,8 +2,8 @@ Sure, here is the Earthfile:
 
 ```Earthfile
 VERSION 0.7
-WORKDIR /app
 FROM python:3.9
+WORKDIR /app
 
 deps:
   COPY requirements.txt .

@@ -31,11 +31,8 @@ Please send any stange results or issues to adam@earthly.dev along with a copy o
 .to_earthly folder and the Earthfile. I will use this for future improvements.
 
 Many things need to be supported and will be ignored for now. These include:
-* container creation
 * matrix builds
 * WITH DOCKER and integration tests
-* Github workflow can not be specified.
-(picks first result from .github/workflows/*.yml )
 
 I'll prioritize these based on feedback. So reach out on slack or via adam@earthly.dev
 or via https://github.com/adamgordonbell/to-earthly
