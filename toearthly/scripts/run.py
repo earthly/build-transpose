@@ -112,6 +112,8 @@ def main(input_dir: str, earthfile_path: str) -> None:
         print("Merging Earthfiles...\n")
         earthfile = merge.prompt(earthfile1, "workflow.yml", earthfile2, "Dockerfile")
         io.verify(earthfile)
+
+        print("Saving Earthfile.\n")
         io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
 
 
@@ -146,5 +148,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     constants.DEBUG_DIR = args.debug_dir
+    constants.VERIFY_EARTHFILE = args.verify
 
     main(args.input_dir, args.earthfile)
