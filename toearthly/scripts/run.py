@@ -7,7 +7,7 @@ import inquirer
 import openai
 
 from toearthly.core import boot, constants, io  # noqa: F401
-from toearthly.prompt import bash_to_earthly, earthfile_correction, gha_to_bash
+from toearthly.prompt import bash_to_earthly, earthfile_correction, gha_to_bash, merge, dockerfile_to_earthfile
 
 # Default directories
 DEFAULT_INPUT_DIR = "/input/"
@@ -57,35 +57,58 @@ def select_workflow(input_dir: str) -> Tuple[str, str]:
         yml = file.read()
     return (path, yml)
 
+def workflow_convert(workflow: str, file_structure : str)-> str:
+    print("Running Stage 1 - GitHub Actions to Bash")
+    runfile, dockerfile, buildfile = gha_to_bash.prompt(workflow, file_structure)
+
+    print("Running Stage 2 - Bash to Earthly")
+    earthfile = bash_to_earthly.prompt(
+        file_structure, runfile, dockerfile, buildfile
+    )
+
+    print("Running Stage 3 - Earthfile Correction")
+    earthfile = earthfile_correction.prompt(earthfile, workflow, file_structure)
+    io.verify(earthfile)
+    return earthfile
+
+def dockerfile_convert(dockerfile_content: str, workflow_content : str)-> str:
+    if not dockerfile_content:
+        return ""
+    print("Running Stage 1 - Dockerfile To Earthfile")
+    earthfile = dockerfile_to_earthfile.prompt(dockerfile_content, workflow_content)
+    io.verify(earthfile)
+    return earthfile
+
 def main(input_dir: str, earthfile_path: str) -> None:
     try:
         print(intro)
-        path, yml = select_workflow(input_dir)
+        workflow_path, workflow_content = select_workflow(input_dir)
+        dockerfile_path, dockerfile_content = io.find_first_dockerfile(input_dir)
         print(
             dedent(
                 f"""
               Input:
-              Workflow:\t{path}
+              Workflow:\t{workflow_path}
+              Dockerfile:\t{dockerfile_path}
               Output:\t\t{earthfile_path}
               Debug files:\t{constants.DEBUG_DIR}
               """
             )
         )
-        file_structure = io.print_directory(input_dir)
+        file_structure = io.print_directory(input_dir) 
 
-        print("Starting...\n (This may take 10 minutes)")
-        print("Running Stage 1 - GitHub Actions to Bash")
-        runfile, dockerfile, buildfile = gha_to_bash.prompt(yml, file_structure)
+        print("Starting Workflow Conversion...\n (This may take 10 minutes)")
+        earthfile1 = workflow_convert(workflow_content, file_structure)
+        
+        print("\nStarting Dockerfile Conversion...")
+        earthfile2 = dockerfile_convert(dockerfile_content, workflow_content) 
 
-        print("Running Stage 2 - Bash to Earthly")
-        earthfile = bash_to_earthly.prompt(
-            file_structure, runfile, dockerfile, buildfile
-        )
-
-        print("Running Stage 3 - Earthfile Correction")
-        earthfile = earthfile_correction.prompt(earthfile, yml, file_structure)
+        print("Merging Earthfiles...\n")
+        earthfile = merge.prompt(earthfile1, "workflow.yml", earthfile2, "Dockerfile")
         io.verify(earthfile)
         io.write(constants.EARTHLY_WARNING + earthfile, earthfile_path)
+
+
     except openai.error.InvalidRequestError as e:
         print("Error: We were unable to convert this workflow.")
         io.log(f"Error Type: openai.error.InvalidRequestError \n Error details: {e}")

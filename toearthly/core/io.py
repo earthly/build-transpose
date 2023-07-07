@@ -124,7 +124,7 @@ def find_first_dockerfile(path=None) -> Tuple[str, str]:
     docker_files = glob.glob(path + "Dockerfile")
 
     if not docker_files:
-        return ""
+        return ("","")
 
     with open(docker_files[0], "r") as file:
         dockerfile = file.read()

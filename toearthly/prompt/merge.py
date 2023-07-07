@@ -15,6 +15,10 @@ examples = [{
     }]
 
 def prompt(file1: str, name1: str, file2: str, name2: str) -> str:
+    if not file1:
+        return file2
+    if not file2:
+        return file1
     program = guidance(
         dedent(
             """
