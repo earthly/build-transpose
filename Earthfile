@@ -20,8 +20,8 @@ docker:
   COPY --dir toearthly .
   ENV PYTHONPATH=/app:$PYTHONPATH
   CMD ["python", "/app/toearthly/scripts/run.py", "--input_dir", "/input", "--debug_dir", "/input/.to_earthly/", "--earthfile", "/input/Earthfile"]
-  SAVE IMAGE to-earthly
+  SAVE IMAGE build-transpose
 
 docker-publish:
   FROM +docker
-  SAVE IMAGE --push agbell/to-earthly:v0
+  SAVE IMAGE --push agbell/build-transpose:v0

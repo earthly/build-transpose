@@ -11,16 +11,19 @@ from joblib import Memory
 
 from toearthly.core import constants
 
-memory = Memory(location="data/gpt_cache", verbose=1)
-
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
-@memory.cache
 def call_chat_completion_api_cached(max_tokens, messages, temperature):
-    print("running prompt")
-    return call_chat_completion_api(max_tokens, messages, temperature)
+    cache = constants.DEBUG_DIR+"/data/gpt_cache"
+    memory = Memory(location=cache, verbose=1)
+    print(f"Caching GPT to {cache}")
 
+    @memory.cache
+    def inner_function(max_tokens, messages, temperature):
+        print("running prompt")
+        return call_chat_completion_api(max_tokens, messages, temperature)
+
+    return inner_function(max_tokens, messages, temperature)
 
 def call_chat_completion_api(max_tokens, messages, temperature):
     max_retries = 3

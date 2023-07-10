@@ -4,3 +4,4 @@ joblib
 python-dotenv
 guidance
 pycryptodome
+inquirer
